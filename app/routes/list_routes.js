@@ -7,6 +7,7 @@ const requireOwnership = customErrors.requireOwnership
 const removeBlanks = require("../../lib/remove_blank_fields")
 const requireToken = passport.authenticate("bearer", { session: false })
 const router = express.Router()
+const User = require("../models/user")
 
 
 //GET ROUTE 
@@ -19,19 +20,23 @@ router.get("/list", (req, res, next) => {
       return foundList.map((list) => list.toObject())
     })
     // respond with status 200 and JSON of the examples
-    .then((list) => res.status(200).json({ list: list }))
+    .then((list) => res.status(200).json({list: list}))
     // if an error occurs, pass it to the handler
     .catch(next)
 })
 
 //POST 
-router.post("/list", (req, res, next) => {
+router.post("/list", requireToken, (req, res, next) => {
   // set owner of new example to be current user
-  // req.body.Video.owner = req.user.id
-  List.create(req.body)
+  req.body.list.owner = req.user.id
+  console.log("this is req.body", req.body)
+  //   console.log('looking for anime id ',req.body.List.animeId)
+  List.create(req.body.list)
     // respond to succesful `create` with status 201 and JSON of new "example"
     .then((createdList) => {
-      res.status(201).json({ createdList: createdList.toObject() })
+      //   console.log('this is req.body', req.body)
+      //   console.log("this is created list ", createdList)
+      res.status(201).json({createdList: createdList.toObject()})
     })
     // if an error occurs, pass it off to our error handler
     // the error handler needs the error message and the `res` object so that it
